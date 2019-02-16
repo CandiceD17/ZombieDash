@@ -2,10 +2,14 @@
 #define STUDENTWORLD_H_
 
 #include "GameWorld.h"
+#include "Level.h"
 #include <string>
+#include <list>
+using namespace std;
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
-//class Penelope;
+class Actor;
+class Penelope;
 
 class StudentWorld : public GameWorld
 {
@@ -16,7 +20,8 @@ public:
     virtual void cleanUp();
 
 private:
-  //  Penelope* m_Pene;
+    Penelope* m_Pene;
+    list<Actor*> m_member;
 };
 
 #endif // STUDENTWORLD_H_

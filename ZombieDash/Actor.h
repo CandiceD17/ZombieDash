@@ -4,32 +4,36 @@
 #include "GraphObject.h"
 
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
+class StudentWorld;
+
 class Actor: public GraphObject {
 public:
     Actor(int imageID, double startX, double startY,
           Direction startDirection, int depth, double size)
     :GraphObject(imageID, startX, startY, startDirection, depth, size)
     {}
-    virtual ~Actor();
     virtual void doSomething()=0;
+    bool notBlocked(Direction dir); //if an object is hindered by wall
 };
 
 class Penelope: public Actor{
 public:
-    Penelope(double startX, double startY)
-    :Actor(0, startX, startY, 0, 0, 1.0)
-    {}
-    virtual ~Penelope();
+    Penelope(double startX, double startY, StudentWorld* world)
+    :Actor(IID_PLAYER, startX, startY, right, 0, 1.0)
+    {
+        m_world = world;
+    }
     virtual void doSomething();
+private:
+    StudentWorld* m_world;
 };
 
 class Wall: public Actor{
-    Wall();
-    virtual ~Wall();
-    virtual void doSomething();
-private:
-    int m_x;
-    int m_y;
+public:
+    Wall(double startX, double startY)
+    :Actor(IID_WALL, startX, startY, right, 0, 1.0)
+    {}
+    virtual void doSomething() {return;}
 };
 
 
