@@ -17,6 +17,7 @@ StudentWorld::StudentWorld(string assetPath)
 
 int StudentWorld::init()
 {
+  //  m_Pene = new Penelope(200,100);
     return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -25,6 +26,7 @@ int StudentWorld::move()
     // This code is here merely to allow the game to build, run, and terminate after you hit enter.
     // Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
     decLives();
+   // delete m_Pene;
     return GWSTATUS_PLAYER_DIED;
 }
 
