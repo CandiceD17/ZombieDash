@@ -2,6 +2,7 @@
 #include "GameConstants.h"
 #include "Actor.h"
 #include <string>
+#include <cmath>
 using namespace std;
 
 GameWorld* createStudentWorld(string assetPath)
@@ -47,6 +48,7 @@ int StudentWorld::init()
                         break;
                     case Level::wall:
                         m_member.push_back(new Wall(i*SPRITE_WIDTH,j*SPRITE_HEIGHT));
+                        block.push_back(new Wall(i*SPRITE_WIDTH,j*SPRITE_HEIGHT));
                         break;
                     default:
                         break;}
@@ -74,4 +76,20 @@ void StudentWorld::cleanUp()
     list<Actor*>::iterator it;
     for(it=m_member.begin(); it!=m_member.end();it++)
         delete *it;
+}
+
+bool StudentWorld::notblocked(double x, double y, int dir){
+    list<Actor*>::iterator it;
+    for(it=block.begin();it!=block.end();it++){
+        if(dir == GraphObject::up || dir == GraphObject::down){
+            if(abs((*it)->getX()-x)<16)
+                if (abs(y-(*it)->getY())<16)
+                    return false;
+        }
+        else
+        {if(abs((*it)->getY()-y)<16)
+            if(abs(x-(*it)->getX())<16)
+                return false;}
+    }
+    return true;
 }

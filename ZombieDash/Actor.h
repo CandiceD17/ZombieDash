@@ -13,7 +13,6 @@ public:
     :GraphObject(imageID, startX, startY, startDirection, depth, size)
     {}
     virtual void doSomething()=0;
-    bool notBlocked(Direction dir); //if an object is hindered by wall
 };
 
 class Penelope: public Actor{

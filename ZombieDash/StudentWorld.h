@@ -9,6 +9,7 @@ using namespace std;
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 class Actor;
+class Wall;
 class Penelope;
 
 class StudentWorld : public GameWorld
@@ -18,10 +19,12 @@ public:
     virtual int init();
     virtual int move();
     virtual void cleanUp();
+    bool notblocked(double x, double y, int dir);
 
 private:
     Penelope* m_Pene;
     list<Actor*> m_member;
+    list<Actor*> block;
 };
 
 #endif // STUDENTWORLD_H_
