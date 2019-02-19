@@ -9,8 +9,8 @@ using namespace std;
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 class Actor;
-class Wall;
 class Penelope;
+class Citizen;
 
 class StudentWorld : public GameWorld
 {
@@ -19,12 +19,18 @@ public:
     virtual int init();
     virtual int move();
     virtual void cleanUp();
-    bool notblocked(double x, double y, int dir);
+    void toNextLevel() {nextLevel = true;}
+    bool notblocked(double x, double y, Actor* moving);
+    bool overlapExit(double x,double y);
+    int citizenCount() {return citizenNum;}
+    void removeCitizen() {citizenNum--;}
 
 private:
     Penelope* m_Pene;
     list<Actor*> m_member;
-    list<Actor*> block;
+    int citizenNum;
+    bool nextLevel;
+    bool overlap(double x, double y, Actor* me);
 };
 
 #endif // STUDENTWORLD_H_
