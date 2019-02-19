@@ -17,6 +17,9 @@ StudentWorld::StudentWorld(string assetPath)
 {
     citizenNum = 0;
     nextLevel = false;
+    m_vac= 0;
+    m_gas = 0;
+    m_land = 0;
 }
 
 int StudentWorld::init()
@@ -38,7 +41,7 @@ int StudentWorld::init()
         case 6:
             levelFile = "level06.txt"; break;
     }
-    Level::LoadResult result = lev.loadLevel(levelFile);
+    Level::LoadResult result = lev.loadLevel("level04.txt");
     if (result == Level::load_success){
         for(int i=0; i<LEVEL_WIDTH;i++){
             for(int j=0; j<LEVEL_HEIGHT;j++){
@@ -52,6 +55,18 @@ int StudentWorld::init()
                         break;
                     case Level::exit:
                         m_member.push_back(new Exit(i*SPRITE_WIDTH, j*SPRITE_HEIGHT,this));
+                        break;
+                    case Level::pit:
+                        m_member.push_back(new Pit(i*SPRITE_WIDTH, j*SPRITE_HEIGHT,this));
+                        break;
+                    case Level::vaccine_goodie:
+                        m_member.push_back(new Vaccine(i*SPRITE_WIDTH, j*SPRITE_HEIGHT,this));
+                        break;
+                    case Level::gas_can_goodie:
+                        m_member.push_back(new GasCan(i*SPRITE_WIDTH, j*SPRITE_HEIGHT,this));
+                        break;
+                    case Level::landmine_goodie:
+                        m_member.push_back(new LandmineGoodies(i*SPRITE_WIDTH, j*SPRITE_HEIGHT,this));
                         break;
                     default:
                         break;
@@ -72,19 +87,25 @@ int StudentWorld::move()
     for(it=m_member.begin(); it!=m_member.end();it++){
         if((*it)->alive())
             (*it)->doSomething();
+        if(!m_Pene->alive()){
+            return GWSTATUS_PLAYER_DIED;}
+        if(nextLevel){
+            nextLevel=false;
+            return GWSTATUS_FINISHED_LEVEL;}
     }
-    if(!m_Pene->alive())
-        return GWSTATUS_PLAYER_DIED;
-    if(nextLevel){
-        nextLevel=false;
-        return GWSTATUS_FINISHED_LEVEL;}
     for(it=m_member.begin(); it!=m_member.end();it++){
         if(!(*it)->alive()){
             delete *it;
             m_member.erase(it);
         }
     }
-    //text here
+    setGameStatText("Score: "+std::to_string(getScore())+"  "+
+                    "Level: "+std::to_string(getLevel())+"  "+
+                    "Lives: "+std::to_string(getLives())+"  "+
+                    "Vacc: "+std::to_string(m_vac)+"  "+
+                    "Flames: "+std::to_string(m_gas)+"  "+
+                    "Mines: "+std::to_string(m_land)+"  "+
+                    "Infected: "+std::to_string(m_Pene->CountInfection()));
     return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -100,13 +121,14 @@ void StudentWorld::cleanUp()
 
 bool StudentWorld::notblocked(double x, double y, Actor* moving){
     if(moving!=m_Pene)
-        if(abs((m_Pene)->getX()-x)<SPRITE_WIDTH && abs(y-(m_Pene)->getY())<SPRITE_HEIGHT)
+        if(abs((m_Pene)->getX()-x)<SPRITE_WIDTH && abs((m_Pene)->getY()-y)<SPRITE_HEIGHT)
             return false;
     list<Actor*>::iterator it;
     for(it=m_member.begin();it!=m_member.end();it++){
         if(moving!=(*it)){
-            if(abs((*it)->getX()-x)<SPRITE_WIDTH && abs(y-(*it)->getY())<SPRITE_HEIGHT)
-                return (*it)->pass();}}
+            if(abs((*it)->getX()-x)<SPRITE_WIDTH && abs((*it)->getY()-y)<SPRITE_HEIGHT)
+                if(!(*it)->pass())
+                   return false;}}
     return true;
 }
 
@@ -116,14 +138,78 @@ bool StudentWorld::overlap(double x, double y, Actor* me){
     return false;
 }
 
-bool StudentWorld::overlapExit(double x, double y){
+bool StudentWorld::overlapExit(double x, double y, Actor* thisOne){
     if(overlap(x, y, m_Pene))
         return m_Pene->exit();
     
     list<Actor*>::iterator it;
     for(it=m_member.begin();it!=m_member.end();it++){
-        if(overlap(x, y, *it))
-            return (*it)->exit();}
+        if(thisOne!=*it)
+            if(overlap(x, y, *it))
+                return (*it)->exit();}
     return false;
 }
 
+void StudentWorld::overlapFlame(double x, double y, Actor* thisOne){
+    if(overlap(x, y, m_Pene))
+        m_Pene->flamming();
+    
+    list<Actor*>::iterator it;
+    for(it=m_member.begin();it!=m_member.end();it++){
+        if(thisOne!=*it)
+            if(overlap(x, y, *it))
+                (*it)->flamming();}
+}
+
+void StudentWorld::overlapVomit(double x, double y, Actor* thisOne){
+    if(overlap(x, y, m_Pene))
+        m_Pene->infecting();
+    
+    list<Actor*>::iterator it;
+    for(it=m_member.begin();it!=m_member.end();it++){
+        if(thisOne!=*it)
+            if(overlap(x, y, *it))
+                (*it)->infecting();}
+}
+
+bool StudentWorld::overlapGoodies(double x, double y){
+    if(overlap(x, y, m_Pene))
+        return true;
+    return false;
+}
+
+void StudentWorld::playerFire(double x, double y, int direction){
+    if(m_gas<=0)
+        return;
+    m_gas--;
+    for(int i=1; i<=3; i++){
+        if(direction==GraphObject::up){
+            list<Actor*>::iterator it;
+            for(it=m_member.begin();it!=m_member.end();it++){
+                if(overlap(x, y+i*SPRITE_HEIGHT, *it))
+                    if((*it)->blockFlame())
+                        return;}
+            m_member.push_back(new Flame(x,y+i*SPRITE_HEIGHT,direction,this));}
+        else if(direction==GraphObject::down){
+            list<Actor*>::iterator it;
+            for(it=m_member.begin();it!=m_member.end();it++){
+                if(overlap(x, y-i*SPRITE_HEIGHT, *it))
+                    if((*it)->blockFlame())
+                        return;}
+            m_member.push_back(new Flame(x,y-i*SPRITE_HEIGHT,direction,this));}
+        else if (direction==GraphObject::left){
+            list<Actor*>::iterator it;
+            for(it=m_member.begin();it!=m_member.end();it++){
+                if(overlap(x-i*SPRITE_HEIGHT,y, *it))
+                    if((*it)->blockFlame())
+                        return;}
+            m_member.push_back(new Flame(x-i*SPRITE_HEIGHT,y,direction,this));}
+        else if (direction==GraphObject::left){
+            list<Actor*>::iterator it;
+            for(it=m_member.begin();it!=m_member.end();it++){
+                if(overlap(x+i*SPRITE_HEIGHT,y, *it))
+                    if((*it)->blockFlame())
+                        return;}
+            m_member.push_back(new Flame(x+i*SPRITE_HEIGHT,y,direction,this));}
+    }
+}

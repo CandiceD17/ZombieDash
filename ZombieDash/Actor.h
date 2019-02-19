@@ -19,8 +19,8 @@ public:
     virtual bool pass()=0; //allows other object to pass thru
     virtual bool isHuman()=0;
     virtual bool isZombie()=0;
-    virtual bool flamming()=0;
-    virtual bool infecting()=0;
+    virtual void flamming()=0;
+    virtual void infecting()=0;
     virtual bool blockFlame()=0;
     void setDead() {isAlive = false;}
     bool alive() {return isAlive;}
@@ -37,15 +37,24 @@ public:
     Human(int imageID, double startX, double startY,
           Direction startDirection, int depth, double size,StudentWorld* world)
     :Actor(imageID, startX, startY, startDirection, depth, size, world)
-    {};
+    {infectCount=0;
+    infectState = false;
+    };
     virtual void doSomething()=0;
     virtual bool exit()=0;
     virtual bool pass() {return false;}
     virtual bool isHuman() {return true;}
     virtual bool isZombie() {return false;}
-    virtual bool flamming() {return true;}
-    virtual bool infecting() {return true;}
+    virtual void flamming()=0;
+    virtual void infecting(){
+        infectCount++;
+        infectState=true;}
     virtual bool blockFlame() {return false;}
+    int CountInfection() {return infectCount;}
+    bool StateInfection() {return infectState;}
+private:
+    int infectCount;
+    bool infectState;
 };
 
 class Penelope: public Human{
@@ -55,16 +64,17 @@ public:
     {}
     virtual void doSomething();
     virtual bool exit();
+    virtual void flamming();
 };
 
 class Citizen: public Human{
 public:
-    Citizen(int imageID, double startX, double startY,
-            Direction startDirection, int depth, double size, StudentWorld* world)
+    Citizen(double startX, double startY, StudentWorld* world)
     :Human(IID_CITIZEN, startX, startY, right, 0, 1.0, world)
     {}
-    virtual void doSomething() {return;}
+    virtual void doSomething();
     virtual bool exit();
+    virtual void flamming();
 };
 
 
@@ -79,8 +89,8 @@ public:
     virtual bool exit() {return false;}
     virtual bool isHuman() {return false;}
     virtual bool isZombie() {return false;}
-    virtual bool flamming() {return false;}
-    virtual bool infecting() {return false;}
+    virtual void flamming() {return;}
+    virtual void infecting() {return;}
     virtual bool blockFlame() {return true;}
 };
 
@@ -94,8 +104,8 @@ public:
     virtual bool exit() {return false;}
     virtual bool isHuman() {return false;}
     virtual bool isZombie() {return false;}
-    virtual bool flamming() {return false;}
-    virtual bool infecting() {return false;}
+    virtual void flamming() {return;}
+    virtual void infecting() {return;}
     virtual bool blockFlame() {return true;}
 };
 
@@ -109,16 +119,86 @@ public:
     virtual bool exit() {return false;}
     virtual bool isHuman() {return false;}
     virtual bool isZombie() {return false;}
-    virtual bool flamming() {return false;}
-    virtual bool infecting() {return false;}
+    virtual void flamming() {return;}
+    virtual void infecting() {return;}
     virtual bool blockFlame() {return false;}
 };
-//
-//class Goodies: public Actor{
-//public:
-//    void flamming();
-//};
-//
+
+//class for flame and vomit
+class Props: public Actor{
+public:
+    Props(int imageID, double startX, double startY, Direction dir, StudentWorld* world)
+    :Actor(imageID, startX, startY, dir, 0, 1.0, world)
+    {tickLeft=2;}
+    virtual void doSomething()=0;
+    virtual bool pass() {return true;}
+    virtual bool exit() {return false;}
+    virtual bool isHuman() {return false;}
+    virtual bool isZombie() {return false;}
+    virtual void flamming() {return;}
+    virtual void infecting() {return;}
+    virtual bool blockFlame() {return false;}
+    int myTick() {return tickLeft;}
+    void minus() {tickLeft--;}
+private:
+    int tickLeft;
+};
+
+class Flame:public Props{
+public:
+    Flame(double startX, double startY, Direction dir, StudentWorld* world)
+    :Props(IID_FLAME, startX, startY, dir, world)
+    {}
+    virtual void doSomething();
+};
+
+class Vomit:public Props{
+public:
+    Vomit(double startX, double startY, Direction dir, StudentWorld* world)
+    :Props(IID_VOMIT, startX, startY, dir, world)
+    {}
+    virtual void doSomething();
+};
+
+class Goodies: public Actor{
+public:
+    Goodies(int imageID, double startX, double startY, StudentWorld* world)
+    :Actor(imageID, startX, startY, right, 1, 1.0, world)
+    {}
+    virtual void doSomething()=0;
+    virtual bool exit() {return false;}
+    virtual bool pass() {return true;}
+    virtual bool isHuman() {return false;}
+    virtual bool isZombie() {return false;}
+    virtual void flamming() {setDead();}
+    virtual void infecting() {return;}
+    virtual bool blockFlame() {return false;}
+};
+
+class Vaccine: public Goodies{
+public:
+    Vaccine(double startX, double startY, StudentWorld* world)
+    :Goodies(IID_VACCINE_GOODIE, startX, startY, world)
+    {}
+    virtual void doSomething();
+};
+
+class GasCan: public Goodies{
+public:
+    GasCan(double startX, double startY, StudentWorld* world)
+    :Goodies(IID_GAS_CAN_GOODIE, startX, startY, world)
+    {}
+    virtual void doSomething();
+};
+
+class LandmineGoodies: public Goodies{
+public:
+    LandmineGoodies(double startX, double startY, StudentWorld* world)
+    :Goodies(IID_LANDMINE_GOODIE, startX, startY, world)
+    {}
+    virtual void doSomething();
+};
+
 //class Landmine: public Actor{
 //public:
 //private:
@@ -131,13 +211,6 @@ public:
 //
 
 
-//
-//class props: public Actor{
-//public:
-//    
-//private:
-//};
-//vomit & flame
 
 
 #endif // ACTOR_H_

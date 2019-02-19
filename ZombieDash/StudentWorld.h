@@ -21,9 +21,16 @@ public:
     virtual void cleanUp();
     void toNextLevel() {nextLevel = true;}
     bool notblocked(double x, double y, Actor* moving);
-    bool overlapExit(double x,double y);
+    bool overlapExit(double x,double y, Actor* thisOne);
+    void overlapFlame(double x, double y, Actor* thisOne);
+    void overlapVomit(double x, double y, Actor* thisOne);
+    bool overlapGoodies(double x, double y);
+    void playerFire(double x, double y, int direction);
     int citizenCount() {return citizenNum;}
     void removeCitizen() {citizenNum--;}
+    void setVaccine(int m) {m_vac+=m;}
+    void setGasCan(int m) {m_gas+=m;}
+    void setLandmine(int m) {m_land+=m;}
 
 private:
     Penelope* m_Pene;
@@ -31,6 +38,9 @@ private:
     int citizenNum;
     bool nextLevel;
     bool overlap(double x, double y, Actor* me);
+    int m_vac;
+    int m_gas;
+    int m_land;
 };
 
 #endif // STUDENTWORLD_H_
