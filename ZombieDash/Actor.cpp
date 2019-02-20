@@ -171,7 +171,56 @@ void Landmine::flamming(){
     getWorld()->playSound(SOUND_LANDMINE_EXPLODE);
     getWorld()->LandmineExplode(getX(), getY());
 }
-//bug & block flame
+
+Direction Zombies::randomDirection(){
+    int direction = randInt(1, 4);
+    switch (direction) {
+        case 1:
+            return right;
+        case 2:
+            return up;
+        case 3:
+            return left;
+         default:
+            return down;
+    }
+}
+
+void Zombies::moving(Direction dir, Zombies* thisOne){
+    switch (dir) {
+        case up:
+            if(getWorld()->notblocked(thisOne->getX(), thisOne->getY()+1, this)){
+                thisOne->moveTo(thisOne->getX(), thisOne->getY()+1);
+                m_movement--;
+            }
+            else m_movement=0;
+            break;
+        case down:
+            if(getWorld()->notblocked(thisOne->getX(), thisOne->getY()-1, this)){
+                thisOne->moveTo(thisOne->getX(), thisOne->getY()-1);
+                m_movement--;
+            }
+            else m_movement=0;
+            break;
+        case left:
+            if(getWorld()->notblocked(thisOne->getX()-1, thisOne->getY(), this)){
+                thisOne->moveTo(thisOne->getX()-1, thisOne->getY());
+                m_movement--;
+            }
+            else m_movement=0;
+            break;
+        case right:
+            if(getWorld()->notblocked(thisOne->getX()+1, thisOne->getY(), this)){
+                moveTo(thisOne->getX()+1, thisOne->getY());
+                m_movement--;
+            }
+            else m_movement=0;
+            break;
+        default:
+            break;
+    }
+}
+
 
 void DumbZombie::doSomething(){
     if(!alive())
@@ -182,63 +231,10 @@ void DumbZombie::doSomething(){
     if(getWorld()->toVomit(getX(),getY(),getDirection())){
         getWorld()->playSound(SOUND_ZOMBIE_VOMIT);
         return;}
-    if(movement==0){
-        movement=randInt(3, 10);
-        int direction = randInt(1, 4);
-        switch (direction) {
-            case 1:
-                setDirection(right);
-                break;
-            case 2:
-                setDirection(up);
-                break;
-            case 3:
-                setDirection(left);
-                break;
-            case 4:
-                setDirection(down);
-                break;
-            default:
-                break;
-        }
-    }
-    switch (getDirection()) {
-        case up:
-            if(getWorld()->notblocked(getX(), getY()+1, this)){
-                moveTo(getX(), getY()+1);
-                movement--;
-            }
-            else
-                movement=0;
-            break;
-        case down:
-            if(getWorld()->notblocked(getX(), getY()-1, this)){
-                moveTo(getX(), getY()-1);
-                movement--;
-            }
-            else
-                movement=0;
-            break;
-        case left:
-            if(getWorld()->notblocked(getX()-1, getY(), this)){
-                moveTo(getX()-1, getY());
-                movement--;
-            }
-            else
-                movement=0;
-            break;
-        case right:
-            if(getWorld()->notblocked(getX()+1, getY(), this)){
-                moveTo(getX()+1, getY());
-                movement--;
-            }
-            else
-                movement=0;
-            break;
-        default:
-            break;
-    }
-    
+    if(movement()==0){
+        setMovement(randInt(3, 10));
+        setDirection(randomDirection());}
+    moving(getDirection(), this);
 }
 
 void DumbZombie::flamming(){
@@ -247,4 +243,29 @@ void DumbZombie::flamming(){
     getWorld()->playSound(SOUND_ZOMBIE_DIE);
     if(randInt(1, 10)==1)
         getWorld()->moreVaccine(getX(),getY());
+}
+
+void SmartZombie::doSomething(){
+    if(!alive())
+        return;
+    addTime();
+    if(tick()%2==0)
+        return;
+    if(getWorld()->toVomit(getX(),getY(),getDirection())){
+        getWorld()->playSound(SOUND_ZOMBIE_VOMIT);
+        return;}
+    if(movement()==0){
+        setMovement(randInt(3, 10));
+        if(getWorld()->findDirection(getX(),getY()) == -1)
+            setDirection(randomDirection());
+        else
+            setDirection(getWorld()->findDirection(getX(),getY()));
+    }
+    moving(getDirection(), this);
+}
+
+void SmartZombie::flamming(){
+    setDead();
+    getWorld()->increaseScore(2000);
+    getWorld()->playSound(SOUND_ZOMBIE_DIE);
 }

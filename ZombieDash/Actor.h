@@ -228,19 +228,31 @@ public:
     virtual bool blockFlame() {return false;}
     void addTime() {m_tick++;}
     int tick() {return m_tick;}
+    Direction randomDirection();
+    void moving(Direction dir, Zombies* thisOne);
+    int movement() {return m_movement;}
+    void setMovement(int n) {m_movement = n;}
 private:
     int m_tick;
+    int m_movement;
 };
 
 class DumbZombie:public Zombies{
 public:
     DumbZombie(double startX, double startY, StudentWorld* world)
     :Zombies(startX, startY, world)
-    {movement=0;}
+    {}
     virtual void doSomething();
     virtual void flamming();
-private:
-    int movement;
+};
+
+class SmartZombie:public Zombies{
+public:
+    SmartZombie(double startX, double startY, StudentWorld* world)
+    :Zombies(startX, startY, world)
+    {}
+    virtual void doSomething();
+    virtual void flamming();
 };
 
 

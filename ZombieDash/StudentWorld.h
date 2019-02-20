@@ -27,9 +27,8 @@ public:
     void overlapVomit(double x, double y, Actor* thisOne);
     bool overlapGoodies(double x, double y);
     bool overlapLandmine(double x, double y, Actor* thisOne);
-    bool toVomit(double x, double y, int direction);
 
-    
+    bool canFire(double x, double y);
     void playerFire(double x, double y, int direction);
     void playerLandmine(double x, double y);
     void LandmineExplode(double x, double y);
@@ -42,6 +41,9 @@ public:
     void setGasCan(int m) {m_gas+=m;}
     void setLandmine(int m) {m_land+=m;}
     int myVaccine() {return m_vac;}
+
+    bool toVomit(double x, double y, int direction);
+    int findDirection(double x, double y);
 
 private:
     Penelope* m_Pene;

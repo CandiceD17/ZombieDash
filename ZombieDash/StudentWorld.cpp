@@ -71,6 +71,9 @@ int StudentWorld::init()
                     case Level::dumb_zombie:
                         m_member.push_back(new DumbZombie(i*SPRITE_WIDTH, j*SPRITE_HEIGHT,this));
                         break;
+                    case Level::smart_zombie:
+                        m_member.push_back(new SmartZombie(i*SPRITE_WIDTH, j*SPRITE_HEIGHT,this));
+                        break;
                     default:
                         break;
                 }
@@ -194,39 +197,36 @@ bool StudentWorld::overlapLandmine(double x, double y, Actor* thisOne){
     return false;
 }
 
+bool StudentWorld::canFire(double x, double y){
+    list<Actor*>::iterator it;
+    for(it=m_member.begin();it!=m_member.end();it++){
+        if(overlap(x, y, *it))
+            if((*it)->blockFlame())
+                return false;}
+    return true;
+}
+
 void StudentWorld::playerFire(double x, double y, int direction){
     if(m_gas<=0)
         return;
     m_gas--;
     for(int i=1; i<=3; i++){
         if(direction==GraphObject::up){
-            list<Actor*>::iterator it;
-            for(it=m_member.begin();it!=m_member.end();it++){
-                if(overlap(x, y+i*SPRITE_HEIGHT, *it))
-                    if((*it)->blockFlame())
-                        return;}
-            m_member.push_back(new Flame(x,y+i*SPRITE_HEIGHT,direction,this));}
+            if(!canFire(x, y+i*SPRITE_HEIGHT))
+                return;
+            m_member.push_front(new Flame(x,y+i*SPRITE_HEIGHT,direction,this));}
         else if(direction==GraphObject::down){
-            list<Actor*>::iterator it;
-            for(it=m_member.begin();it!=m_member.end();it++){
-                if(overlap(x, y-i*SPRITE_HEIGHT, *it))
-                    if((*it)->blockFlame())
-                        return;}
-            m_member.push_back(new Flame(x,y-i*SPRITE_HEIGHT,direction,this));}
+            if(!canFire(x, y-i*SPRITE_HEIGHT))
+                return;
+            m_member.push_front(new Flame(x,y-i*SPRITE_HEIGHT,direction,this));}
         else if (direction==GraphObject::left){
-            list<Actor*>::iterator it;
-            for(it=m_member.begin();it!=m_member.end();it++){
-                if(overlap(x-i*SPRITE_HEIGHT,y, *it))
-                    if((*it)->blockFlame())
-                        return;}
-            m_member.push_back(new Flame(x-i*SPRITE_HEIGHT,y,direction,this));}
-        else if (direction==GraphObject::left){
-            list<Actor*>::iterator it;
-            for(it=m_member.begin();it!=m_member.end();it++){
-                if(overlap(x+i*SPRITE_HEIGHT,y, *it))
-                    if((*it)->blockFlame())
-                        return;}
-            m_member.push_back(new Flame(x+i*SPRITE_HEIGHT,y,direction,this));}
+            if(!canFire(x-i*SPRITE_HEIGHT,y))
+                return;
+            m_member.push_front(new Flame(x-i*SPRITE_HEIGHT,y,direction,this));}
+        else if (direction==GraphObject::right){
+            if(!canFire(x+i*SPRITE_HEIGHT,y))
+                    return;
+            m_member.push_front(new Flame(x+i*SPRITE_HEIGHT,y,direction,this));}
     }
 }
 
@@ -237,17 +237,26 @@ void StudentWorld::playerLandmine(double x, double y){
 
 void StudentWorld::LandmineExplode(double x, double y){
     m_member.push_front(new Pit(x,y,this));
-    m_member.push_front(new Flame(x,y,GraphObject::right,this));
+    if(canFire(x, y))
+        m_member.push_front(new Flame(x,y,GraphObject::right,this));
     
-    m_member.push_front(new Flame(x+SPRITE_WIDTH,y,GraphObject::right,this));
-    m_member.push_front(new Flame(x-SPRITE_WIDTH,y,GraphObject::right,this));
-    m_member.push_front(new Flame(x,y+SPRITE_HEIGHT,GraphObject::right,this));
-    m_member.push_front(new Flame(x,y-SPRITE_HEIGHT,GraphObject::right,this));
+    if(canFire(x+SPRITE_WIDTH, y))
+        m_member.push_front(new Flame(x+SPRITE_WIDTH,y,GraphObject::right,this));
+    if(canFire(x-SPRITE_WIDTH, y))
+        m_member.push_front(new Flame(x-SPRITE_WIDTH,y,GraphObject::right,this));
+    if(canFire(x, y+SPRITE_HEIGHT))
+        m_member.push_front(new Flame(x,y+SPRITE_HEIGHT,GraphObject::right,this));
+    if(canFire(x, y-SPRITE_HEIGHT))
+        m_member.push_front(new Flame(x,y-SPRITE_HEIGHT,GraphObject::right,this));
 
-    m_member.push_front(new Flame(x+SPRITE_WIDTH,y+SPRITE_HEIGHT,GraphObject::right,this));
-    m_member.push_front(new Flame(x+SPRITE_WIDTH,y-SPRITE_HEIGHT,GraphObject::right,this));
-    m_member.push_front(new Flame(x-SPRITE_WIDTH,y-SPRITE_HEIGHT,GraphObject::right,this));
-    m_member.push_front(new Flame(x-SPRITE_WIDTH,y+SPRITE_HEIGHT,GraphObject::right,this));
+    if(canFire(x+SPRITE_WIDTH, y+SPRITE_HEIGHT))
+        m_member.push_front(new Flame(x+SPRITE_WIDTH,y+SPRITE_HEIGHT,GraphObject::right,this));
+    if(canFire(x+SPRITE_WIDTH, y-SPRITE_HEIGHT))
+        m_member.push_front(new Flame(x+SPRITE_WIDTH,y-SPRITE_HEIGHT,GraphObject::right,this));
+    if(canFire(x-SPRITE_WIDTH, y-SPRITE_HEIGHT))
+        m_member.push_front(new Flame(x-SPRITE_WIDTH,y-SPRITE_HEIGHT,GraphObject::right,this));
+    if(canFire(x-SPRITE_WIDTH, y+SPRITE_HEIGHT))
+        m_member.push_front(new Flame(x-SPRITE_WIDTH,y+SPRITE_HEIGHT,GraphObject::right,this));
 }
 
 void StudentWorld::moreVaccine(double x, double y){
@@ -306,4 +315,42 @@ bool StudentWorld::toVomit(double x, double y, int direction){
             m_member.push_back(new Vomit(x, y-SPRITE_HEIGHT, GraphObject::down,this));
             return true;}}
     return false;
+}
+
+int StudentWorld::findDirection(double x, double y){
+    int minDistance=sqrt(pow((m_Pene)->getX()-x,2)+pow((m_Pene)->getY()-y,2));
+    int dir = -1;
+    Actor* closet = m_member.front();
+    list<Actor*>::iterator it;
+    for(it=m_member.begin();it!=m_member.end();it++){
+        if(sqrt(pow((*it)->getX()-x,2)+pow((*it)->getY()-y,2))<minDistance){
+            if((*it)->isHuman()){
+                minDistance=sqrt(pow((*it)->getX()-x,2)+pow((*it)->getY()-y,2));
+                closet = *it;}
+        }
+    }
+    if(minDistance>80)
+        return dir;
+    if(x==closet->getX()){
+        if(y>closet->getY())
+            dir = GraphObject::down;
+        else
+            dir = GraphObject::up;}
+    else if (y==closet->getY()){
+        if(x>closet->getX())
+            dir = GraphObject::left;
+        else
+            dir = GraphObject::right;}
+    else if(randInt(1, 2)==1){ //move up and down
+        if(y>closet->getY())
+            dir = GraphObject::down;
+        else
+            dir = GraphObject::up;}
+    else{
+        if(x>closet->getX())
+            dir = GraphObject::left;
+        else
+            dir = GraphObject::right;}
+
+    return dir;
 }
