@@ -20,17 +20,28 @@ public:
     virtual int move();
     virtual void cleanUp();
     void toNextLevel() {nextLevel = true;}
+    
     bool notblocked(double x, double y, Actor* moving);
     bool overlapExit(double x,double y, Actor* thisOne);
     void overlapFlame(double x, double y, Actor* thisOne);
     void overlapVomit(double x, double y, Actor* thisOne);
     bool overlapGoodies(double x, double y);
+    bool overlapLandmine(double x, double y, Actor* thisOne);
+    bool toVomit(double x, double y, int direction);
+
+    
     void playerFire(double x, double y, int direction);
+    void playerLandmine(double x, double y);
+    void LandmineExplode(double x, double y);
+    void moreVaccine(double x, double y);
+    
     int citizenCount() {return citizenNum;}
     void removeCitizen() {citizenNum--;}
+    
     void setVaccine(int m) {m_vac+=m;}
     void setGasCan(int m) {m_gas+=m;}
     void setLandmine(int m) {m_land+=m;}
+    int myVaccine() {return m_vac;}
 
 private:
     Penelope* m_Pene;

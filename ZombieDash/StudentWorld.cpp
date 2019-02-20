@@ -68,6 +68,9 @@ int StudentWorld::init()
                     case Level::landmine_goodie:
                         m_member.push_back(new LandmineGoodies(i*SPRITE_WIDTH, j*SPRITE_HEIGHT,this));
                         break;
+                    case Level::dumb_zombie:
+                        m_member.push_back(new DumbZombie(i*SPRITE_WIDTH, j*SPRITE_HEIGHT,this));
+                        break;
                     default:
                         break;
                 }
@@ -178,6 +181,19 @@ bool StudentWorld::overlapGoodies(double x, double y){
     return false;
 }
 
+bool StudentWorld::overlapLandmine(double x, double y, Actor* thisOne){
+    if(overlap(x, y, m_Pene))
+        return true;
+    
+    list<Actor*>::iterator it;
+    for(it=m_member.begin();it!=m_member.end();it++){
+        if(thisOne!=*it)
+            if(overlap(x, y, *it))
+                return ((*it)->isHuman()||(*it)->isZombie());
+    }
+    return false;
+}
+
 void StudentWorld::playerFire(double x, double y, int direction){
     if(m_gas<=0)
         return;
@@ -212,4 +228,82 @@ void StudentWorld::playerFire(double x, double y, int direction){
                         return;}
             m_member.push_back(new Flame(x+i*SPRITE_HEIGHT,y,direction,this));}
     }
+}
+
+void StudentWorld::playerLandmine(double x, double y){
+    m_land--;
+    m_member.push_back(new Landmine(x,y,this));
+}
+
+void StudentWorld::LandmineExplode(double x, double y){
+ //   m_member.push_back(new Pit(x,y,this));
+ //   m_member.push_back(new Flame(x,y,GraphObject::right,this));
+    
+    m_member.push_back(new Flame(x+SPRITE_WIDTH,y,GraphObject::right,this));
+    m_member.push_back(new Flame(x-SPRITE_WIDTH,y,GraphObject::right,this));
+    m_member.push_back(new Flame(x,y+SPRITE_HEIGHT,GraphObject::right,this));
+    m_member.push_back(new Flame(x,y-SPRITE_HEIGHT,GraphObject::right,this));
+
+    m_member.push_back(new Flame(x+SPRITE_WIDTH,y+SPRITE_HEIGHT,GraphObject::right,this));
+    m_member.push_back(new Flame(x+SPRITE_WIDTH,y-SPRITE_HEIGHT,GraphObject::right,this));
+    m_member.push_back(new Flame(x-SPRITE_WIDTH,y-SPRITE_HEIGHT,GraphObject::right,this));
+    m_member.push_back(new Flame(x-SPRITE_WIDTH,y+SPRITE_HEIGHT,GraphObject::right,this));
+}
+
+void StudentWorld::moreVaccine(double x, double y){
+    m_member.push_back(new Vaccine(x, y, this));
+}
+
+bool StudentWorld::toVomit(double x, double y, int direction){
+    bool isNear = false;
+    
+    int chance = randInt(1, 3);
+    if(chance==1 || chance==2)
+        return false;
+    
+    if(direction == GraphObject::left){
+        if(overlap(x-SPRITE_WIDTH, y, m_Pene)){
+            isNear = true;}
+        list<Actor*>::iterator it;
+        for(it=m_member.begin();it!=m_member.end();it++){
+            if(overlap(x-SPRITE_WIDTH, y, *it))
+                if((*it)->isHuman())
+                    isNear = true;}
+        if(isNear == true){
+            m_member.push_back(new Vomit(x-SPRITE_WIDTH, y, GraphObject::left,this));
+            return true;}}
+    else if(direction == GraphObject::right){
+        if(overlap(x+SPRITE_WIDTH, y, m_Pene)){
+            isNear = true;}
+        list<Actor*>::iterator it;
+        for(it=m_member.begin();it!=m_member.end();it++){
+            if(overlap(x+SPRITE_WIDTH, y, *it))
+                if((*it)->isHuman())
+                    isNear = true;}
+        if(isNear == true){
+            m_member.push_back(new Vomit(x-SPRITE_WIDTH, y, GraphObject::right,this));
+            return true;}}
+    else if(direction == GraphObject::up){
+        if(overlap(x, y+SPRITE_HEIGHT, m_Pene)){
+            isNear = true;}
+        list<Actor*>::iterator it;
+        for(it=m_member.begin();it!=m_member.end();it++){
+            if(overlap(x, y+SPRITE_HEIGHT, *it))
+                if((*it)->isHuman())
+                    isNear = true;}
+        if(isNear == true){
+            m_member.push_back(new Vomit(x, y+SPRITE_HEIGHT, GraphObject::up,this));
+            return true;}}
+    else if(direction == GraphObject::up){
+        if(overlap(x, y-SPRITE_HEIGHT, m_Pene)){
+            isNear = true;}
+        list<Actor*>::iterator it;
+        for(it=m_member.begin();it!=m_member.end();it++){
+            if(overlap(x, y-SPRITE_HEIGHT, *it))
+                if((*it)->isHuman())
+                    isNear = true;}
+        if(isNear == true){
+            m_member.push_back(new Vomit(x, y-SPRITE_HEIGHT, GraphObject::down,this));
+            return true;}}
+    return false;
 }

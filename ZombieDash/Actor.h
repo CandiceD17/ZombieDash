@@ -52,6 +52,8 @@ public:
     virtual bool blockFlame() {return false;}
     int CountInfection() {return infectCount;}
     bool StateInfection() {return infectState;}
+    void noInfection() {infectState = false;}
+    void resetInfection() {infectCount = 0;}
 private:
     int infectCount;
     bool infectState;
@@ -199,16 +201,50 @@ public:
     virtual void doSomething();
 };
 
-//class Landmine: public Actor{
-//public:
-//private:
-//    int safeTick;
-//};
-//
-//class Zombies:public Actor{
-//public:
-//};
-//
+class Landmine: public Goodies{
+public:
+    Landmine(double startX, double startY, StudentWorld* world)
+    :Goodies(IID_LANDMINE, startX, startY,world)
+    {safeTick=30;}
+    virtual void doSomething();
+    virtual void flamming();
+    void decSafeTick() {safeTick--;}
+private:
+    int safeTick;
+};
+
+class Zombies:public Actor{
+public:
+    Zombies(double startX, double startY, StudentWorld* world)
+    :Actor(IID_ZOMBIE, startX, startY, right, 0, 1.0, world)
+    {}
+    virtual void doSomething()=0;
+    virtual bool exit() {return false;}
+    virtual bool pass() {return false;}
+    virtual bool isHuman() {return false;}
+    virtual bool isZombie() {return true;}
+    virtual void flamming()=0;
+    virtual void infecting() {return;}
+    virtual bool blockFlame() {return false;}
+    void addTime() {m_tick++;}
+    int tick() {return m_tick;}
+private:
+    int m_tick;
+};
+
+class DumbZombie:public Zombies{
+public:
+    DumbZombie(double startX, double startY, StudentWorld* world)
+    :Zombies(startX, startY, world)
+    {movement=0;}
+    virtual void doSomething();
+    virtual void flamming();
+private:
+    int movement;
+};
+
+
+
 
 
 
