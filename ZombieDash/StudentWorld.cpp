@@ -236,18 +236,18 @@ void StudentWorld::playerLandmine(double x, double y){
 }
 
 void StudentWorld::LandmineExplode(double x, double y){
- //   m_member.push_back(new Pit(x,y,this));
- //   m_member.push_back(new Flame(x,y,GraphObject::right,this));
+    m_member.push_front(new Pit(x,y,this));
+    m_member.push_front(new Flame(x,y,GraphObject::right,this));
     
-    m_member.push_back(new Flame(x+SPRITE_WIDTH,y,GraphObject::right,this));
-    m_member.push_back(new Flame(x-SPRITE_WIDTH,y,GraphObject::right,this));
-    m_member.push_back(new Flame(x,y+SPRITE_HEIGHT,GraphObject::right,this));
-    m_member.push_back(new Flame(x,y-SPRITE_HEIGHT,GraphObject::right,this));
+    m_member.push_front(new Flame(x+SPRITE_WIDTH,y,GraphObject::right,this));
+    m_member.push_front(new Flame(x-SPRITE_WIDTH,y,GraphObject::right,this));
+    m_member.push_front(new Flame(x,y+SPRITE_HEIGHT,GraphObject::right,this));
+    m_member.push_front(new Flame(x,y-SPRITE_HEIGHT,GraphObject::right,this));
 
-    m_member.push_back(new Flame(x+SPRITE_WIDTH,y+SPRITE_HEIGHT,GraphObject::right,this));
-    m_member.push_back(new Flame(x+SPRITE_WIDTH,y-SPRITE_HEIGHT,GraphObject::right,this));
-    m_member.push_back(new Flame(x-SPRITE_WIDTH,y-SPRITE_HEIGHT,GraphObject::right,this));
-    m_member.push_back(new Flame(x-SPRITE_WIDTH,y+SPRITE_HEIGHT,GraphObject::right,this));
+    m_member.push_front(new Flame(x+SPRITE_WIDTH,y+SPRITE_HEIGHT,GraphObject::right,this));
+    m_member.push_front(new Flame(x+SPRITE_WIDTH,y-SPRITE_HEIGHT,GraphObject::right,this));
+    m_member.push_front(new Flame(x-SPRITE_WIDTH,y-SPRITE_HEIGHT,GraphObject::right,this));
+    m_member.push_front(new Flame(x-SPRITE_WIDTH,y+SPRITE_HEIGHT,GraphObject::right,this));
 }
 
 void StudentWorld::moreVaccine(double x, double y){
