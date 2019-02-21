@@ -16,6 +16,7 @@ class StudentWorld : public GameWorld
 {
 public:
     StudentWorld(std::string assetPath);
+    ~StudentWorld();
     virtual int init();
     virtual int move();
     virtual void cleanUp();
@@ -36,6 +37,12 @@ public:
     
     int citizenCount() {return citizenNum;}
     void removeCitizen() {citizenNum--;}
+    void newZombie(double x, double y);
+    double distancePene(double x, double y);
+    double distanceZombie(double x, double y);
+    int findDirectionPene(double x, double y, Actor* moving);
+    int findDirectionZombie(double x, double y, Actor* moving);
+
     
     void setVaccine(int m) {m_vac+=m;}
     void setGasCan(int m) {m_gas+=m;}
@@ -54,6 +61,7 @@ private:
     int m_vac;
     int m_gas;
     int m_land;
+    bool deletePene;
 };
 
 #endif // STUDENTWORLD_H_

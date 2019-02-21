@@ -65,22 +65,68 @@ void Penelope::flamming(){
     getWorld()->playSound(SOUND_PLAYER_DIE);
 }
 
+void Citizen::makeMove(Direction dir){
+    switch (dir) {
+        case right:
+            moveTo(getX()+2, getY());
+            break;
+        case left:
+            moveTo(getX()-2, getY());
+            break;
+        case up:
+            moveTo(getX(), getY()+2);
+            break;
+        case down:
+            moveTo(getX(), getY()-2);
+            break;
+        default:
+            break;
+    }
+}
+
 void Citizen::doSomething(){
+    if(!alive())
+        return;
     if(StateInfection())
         infecting();
     if(CountInfection()==500){
         setDead();
-    //create a zombie
+        getWorld()->playSound(SOUND_ZOMBIE_BORN);
+        getWorld()->newZombie(getX(),getY());
+        getWorld()->removeCitizen();
+        getWorld()->increaseScore(-1000);
+        return;
     }
+    addTime();
+    if(tick()%2==0)
+        return;
+    double dist_p = getWorld()->distancePene(getX(), getY());
+    double dist_z = getWorld()->distanceZombie(getX(), getY());
+    if(dist_p<dist_z && dist_p<=80){
+        int dir = getWorld()->findDirectionPene(getX(), getY(),this);
+        if(dir != -1){
+            makeMove(dir);
+            return;}
+    }
+    if(dist_z<=80){
+        int dir =getWorld()->findDirectionZombie(getX(), getY(), this);
+        if(dir==-1)
+            return;
+        makeMove(dir);
+    }
+    else
+        return;
 }
 
 bool Citizen::exit(){
     setDead();
+    getWorld()->removeCitizen();
     return true;
 }
 
 void Citizen::flamming(){
     setDead();
+    getWorld()->removeCitizen();
     getWorld()->increaseScore(-1000);
     getWorld()->playSound(SOUND_CITIZEN_DIE);
 }

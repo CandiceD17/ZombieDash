@@ -77,6 +77,11 @@ public:
     virtual void doSomething();
     virtual bool exit();
     virtual void flamming();
+    void makeMove(Direction dir);
+    void addTime() {m_tick++;}
+    int tick() {return m_tick;}
+private:
+    int m_tick;
 };
 
 

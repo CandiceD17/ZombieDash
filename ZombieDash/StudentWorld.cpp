@@ -20,10 +20,22 @@ StudentWorld::StudentWorld(string assetPath)
     m_vac= 0;
     m_gas = 0;
     m_land = 0;
+    deletePene = false;
+}
+
+StudentWorld::~StudentWorld(){
+    cleanUp();
 }
 
 int StudentWorld::init()
 {
+    citizenNum = 0;
+    nextLevel = false;
+    m_vac= 0;
+    m_gas = 0;
+    m_land = 0;
+    deletePene = false;
+    
     Level lev(assetPath());
     int level = getLevel();
     string levelFile;
@@ -40,8 +52,10 @@ int StudentWorld::init()
             levelFile = "level05.txt"; break;
         case 6:
             levelFile = "level06.txt"; break;
+        default:
+            return GWSTATUS_PLAYER_WON;
     }
-    Level::LoadResult result = lev.loadLevel("level04.txt");
+    Level::LoadResult result = lev.loadLevel(levelFile);
     if (result == Level::load_success){
         for(int i=0; i<LEVEL_WIDTH;i++){
             for(int j=0; j<LEVEL_HEIGHT;j++){
@@ -73,6 +87,10 @@ int StudentWorld::init()
                         break;
                     case Level::smart_zombie:
                         m_member.push_back(new SmartZombie(i*SPRITE_WIDTH, j*SPRITE_HEIGHT,this));
+                        break;
+                    case Level::citizen:
+                        m_member.push_back(new Citizen(i*SPRITE_WIDTH, j*SPRITE_HEIGHT,this));
+                        citizenNum++;
                         break;
                     default:
                         break;
@@ -111,13 +129,16 @@ int StudentWorld::move()
                     "Vacc: "+std::to_string(m_vac)+"  "+
                     "Flames: "+std::to_string(m_gas)+"  "+
                     "Mines: "+std::to_string(m_land)+"  "+
-                    "Infected: "+std::to_string(m_Pene->CountInfection()));
+                    "C: "+std::to_string(citizenNum)+"  "+
+                    "Infected: "+std::to_string(m_Pene->CountInfection()));//change
     return GWSTATUS_CONTINUE_GAME;
 }
 
 void StudentWorld::cleanUp()
 {
-    delete m_Pene;
+    if(!deletePene){
+        delete m_Pene;
+        deletePene = true;}
     list<Actor*>::iterator it;
     for(it=m_member.begin(); it!=m_member.end();it++){
         delete *it;
@@ -281,6 +302,7 @@ bool StudentWorld::toVomit(double x, double y, int direction){
         if(isNear == true){
             m_member.push_back(new Vomit(x-SPRITE_WIDTH, y, GraphObject::left,this));
             return true;}}
+ 
     else if(direction == GraphObject::right){
         if(overlap(x+SPRITE_WIDTH, y, m_Pene)){
             isNear = true;}
@@ -290,8 +312,9 @@ bool StudentWorld::toVomit(double x, double y, int direction){
                 if((*it)->isHuman())
                     isNear = true;}
         if(isNear == true){
-            m_member.push_back(new Vomit(x-SPRITE_WIDTH, y, GraphObject::right,this));
+            m_member.push_back(new Vomit(x+SPRITE_WIDTH, y, GraphObject::right,this));
             return true;}}
+
     else if(direction == GraphObject::up){
         if(overlap(x, y+SPRITE_HEIGHT, m_Pene)){
             isNear = true;}
@@ -303,7 +326,8 @@ bool StudentWorld::toVomit(double x, double y, int direction){
         if(isNear == true){
             m_member.push_back(new Vomit(x, y+SPRITE_HEIGHT, GraphObject::up,this));
             return true;}}
-    else if(direction == GraphObject::up){
+  
+    else if(direction == GraphObject::down){
         if(overlap(x, y-SPRITE_HEIGHT, m_Pene)){
             isNear = true;}
         list<Actor*>::iterator it;
@@ -318,7 +342,7 @@ bool StudentWorld::toVomit(double x, double y, int direction){
 }
 
 int StudentWorld::findDirection(double x, double y){
-    int minDistance=sqrt(pow((m_Pene)->getX()-x,2)+pow((m_Pene)->getY()-y,2));
+    double minDistance=sqrt(pow((m_Pene)->getX()-x,2)+pow((m_Pene)->getY()-y,2));
     int dir = -1;
     Actor* closet = m_member.front();
     list<Actor*>::iterator it;
@@ -354,3 +378,100 @@ int StudentWorld::findDirection(double x, double y){
 
     return dir;
 }
+
+void StudentWorld::newZombie(double x, double y){
+    int random = randInt(1, 10);
+    if(random<=3)
+        m_member.push_back(new SmartZombie(x,y,this));
+    else
+        m_member.push_back(new DumbZombie(x,y,this));
+}
+
+double StudentWorld::distancePene(double x, double y){
+    return sqrt(pow((m_Pene)->getX()-x,2)+pow((m_Pene)->getY()-y,2));
+}
+
+int StudentWorld::findDirectionPene(double x, double y, Actor* moving){
+    if(x==m_Pene->getX()){
+        if(y>m_Pene->getY()){
+            if(notblocked(x, y-2, moving))
+                return GraphObject::down;}
+        else{
+            if(notblocked(x, y+2, moving))
+                return GraphObject::up;}}
+    else if(y==m_Pene->getY()){
+        if(x>m_Pene->getX()){
+            if(notblocked(x-2, y, moving))
+                return GraphObject::left;}
+        else{
+            if(notblocked(x+2, y, moving))
+                return GraphObject::right;}}
+    else if(randInt(1, 2)==1){ //up and down
+        if(y>m_Pene->getY()){
+            if(notblocked(x, y-2, moving))
+                return GraphObject::down;}
+        else{
+            if(notblocked(x, y+2, moving))
+                return GraphObject::up;}}
+    else{if(x>m_Pene->getX()){
+            if(notblocked(x-2, y, moving))
+                return GraphObject::left;}
+        else{
+            if(notblocked(x+2, y, moving))
+                return GraphObject::right;}}
+    return -1;
+}
+
+
+double StudentWorld::distanceZombie(double x, double y){
+    double minDistance = 10000;
+    list<Actor*>::iterator it;
+    for(it=m_member.begin();it!=m_member.end();it++){
+        if((*it)->isZombie()){
+            if(sqrt(pow((*it)->getX()-x,2)+pow((*it)->getY()-y,2))<minDistance){
+                minDistance=sqrt(pow((*it)->getX()-x,2)+pow((*it)->getY()-y,2));}
+        }
+    }
+    return minDistance;
+}
+
+int StudentWorld::findDirectionZombie(double x, double y, Actor* moving){
+    double minDistance=10000;
+    bool hasPointer = false;
+    Actor* closet = m_member.front();
+    list<Actor*>::iterator it;
+    for(it=m_member.begin();it!=m_member.end();it++){
+        if(sqrt(pow((*it)->getX()-x,2)+pow((*it)->getY()-y,2))<minDistance){
+            if((*it)->isZombie()){
+                minDistance=sqrt(pow((*it)->getX()-x,2)+pow((*it)->getY()-y,2));
+                closet = *it;
+                hasPointer=true;
+            }
+        }
+    }
+    int dir=-1;
+    if(!hasPointer)
+        return false;
+    if(sqrt(pow((closet)->getX()-(x+2),2)+pow((closet)->getY()-y,2))>minDistance){//move right
+        if(notblocked(x+2, y, moving)){
+            minDistance = sqrt(pow((closet)->getX()-(x+2),2)+pow((closet)->getY()-y,2));
+            dir = GraphObject::right;
+        }}
+    if (sqrt(pow((closet)->getX()-(x-2),2)+pow((closet)->getY()-y,2))>minDistance){//move left
+        if(notblocked(x-2, y, moving)){
+            minDistance = sqrt(pow((closet)->getX()-(x-2),2)+pow((closet)->getY()-y,2));
+            dir = GraphObject::left;
+        }}
+    if (sqrt(pow((closet)->getX()-x,2)+pow((closet)->getY()-(y+2),2))>minDistance){//move up
+        if(notblocked(x, y+2, moving)){
+            minDistance = sqrt(pow((closet)->getX()-x,2)+pow((closet)->getY()-(y+2),2));
+            dir = GraphObject::up;
+        }}
+    if (sqrt(pow((closet)->getX()-x,2)+pow((closet)->getY()-(y-2),2))>minDistance){//move down
+        if(notblocked(x, y-2, moving)){
+            minDistance = sqrt(pow((closet)->getX()-x,2)+pow((closet)->getY()-(y-2),2));
+            dir = GraphObject::down;
+        }}
+    return dir;
+}
+
