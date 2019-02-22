@@ -3,6 +3,8 @@
 
 // Students:  Add code to this file, Actor.h, StudentWorld.h, and StudentWorld.cpp
 
+//vaccine when zombie die
+
 void Penelope::doSomething(){
     if(StateInfection())
         infecting();
@@ -37,6 +39,7 @@ void Penelope::doSomething(){
             break;
         case KEY_PRESS_SPACE:
             getWorld()->playerFire(getX(), getY(), getDirection());
+            getWorld()->playSound(SOUND_PLAYER_FIRE);
             break;
         case KEY_PRESS_TAB: //landmine
             getWorld()->playerLandmine(getX(), getY());
@@ -54,8 +57,9 @@ void Penelope::doSomething(){
 }
 
 bool Penelope::exit(){
-    if (getWorld()->citizenCount()==0)
-        return true;
+    if (getWorld()->citizenCount()<=0){
+        getWorld()->removeCitizen();
+        return true;}
     return false;
 }
 
@@ -125,6 +129,8 @@ bool Citizen::exit(){
 }
 
 void Citizen::flamming(){
+    if(!alive())
+        return;
     setDead();
     getWorld()->removeCitizen();
     getWorld()->increaseScore(-1000);
@@ -133,12 +139,13 @@ void Citizen::flamming(){
 
 void Exit::doSomething(){
     if(getWorld()->overlapExit(getX(), getY(), this)){
-        if(getWorld()->citizenCount()!=0){
+        if(getWorld()->citizenCount()>=0){
             getWorld()->increaseScore(500);
             getWorld()->playSound(SOUND_CITIZEN_SAVED);
         }
         else{
             getWorld()->toNextLevel();
+            getWorld()->playSound(SOUND_LEVEL_FINISHED);
         }
     }
 }
@@ -227,7 +234,7 @@ Direction Zombies::randomDirection(){
             return up;
         case 3:
             return left;
-         default:
+        default:
             return down;
     }
 }
@@ -284,11 +291,13 @@ void DumbZombie::doSomething(){
 }
 
 void DumbZombie::flamming(){
+    if(!alive())
+        return;
     setDead();
     getWorld()->increaseScore(1000);
     getWorld()->playSound(SOUND_ZOMBIE_DIE);
     if(randInt(1, 10)==1)
-        getWorld()->moreVaccine(getX(),getY());
+        getWorld()->moreVaccine(getX(), getY());
 }
 
 void SmartZombie::doSomething(){

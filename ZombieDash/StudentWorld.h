@@ -62,6 +62,7 @@ private:
     int m_gas;
     int m_land;
     bool deletePene;
+    bool m_init;
 };
 
 #endif // STUDENTWORLD_H_

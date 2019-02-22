@@ -47,6 +47,7 @@ public:
     virtual bool isZombie() {return false;}
     virtual void flamming()=0;
     virtual void infecting(){
+        return;
         infectCount++;
         infectState=true;}
     virtual bool blockFlame() {return false;}

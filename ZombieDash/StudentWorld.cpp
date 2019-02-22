@@ -10,7 +10,6 @@ GameWorld* createStudentWorld(string assetPath)
     return new StudentWorld(assetPath);
 }
 
-// Students:  Add code to this file, StudentWorld.h, Actor.h and Actor.cpp
 
 StudentWorld::StudentWorld(string assetPath)
 : GameWorld(assetPath)
@@ -21,6 +20,7 @@ StudentWorld::StudentWorld(string assetPath)
     m_gas = 0;
     m_land = 0;
     deletePene = false;
+    m_init = false;
 }
 
 StudentWorld::~StudentWorld(){
@@ -29,12 +29,15 @@ StudentWorld::~StudentWorld(){
 
 int StudentWorld::init()
 {
+    playSound(SOUND_THEME);
+    
     citizenNum = 0;
     nextLevel = false;
     m_vac= 0;
     m_gas = 0;
     m_land = 0;
     deletePene = false;
+    m_init = false;
     
     Level lev(assetPath());
     int level = getLevel();
@@ -98,6 +101,7 @@ int StudentWorld::init()
             }
         }
     }
+    m_init = true;
     return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -136,6 +140,8 @@ int StudentWorld::move()
 
 void StudentWorld::cleanUp()
 {
+    if(!m_init)
+        return;
     if(!deletePene){
         delete m_Pene;
         deletePene = true;}
@@ -252,6 +258,8 @@ void StudentWorld::playerFire(double x, double y, int direction){
 }
 
 void StudentWorld::playerLandmine(double x, double y){
+    if(m_land<=0)
+        return;
     m_land--;
     m_member.push_back(new Landmine(x,y,this));
 }
@@ -281,7 +289,7 @@ void StudentWorld::LandmineExplode(double x, double y){
 }
 
 void StudentWorld::moreVaccine(double x, double y){
-    m_member.push_back(new Vaccine(x, y, this));
+    m_member.push_front(new Vaccine(x, y, this));
 }
 
 bool StudentWorld::toVomit(double x, double y, int direction){
