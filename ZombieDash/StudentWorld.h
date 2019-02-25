@@ -33,6 +33,8 @@ public:
     void playerFire(double x, double y, int direction);
     void playerLandmine(double x, double y);
     void LandmineExplode(double x, double y);
+    
+    bool noOverlap(double x, double y);
     void moreVaccine(double x, double y);
     
     int citizenCount() {return citizenNum;}
@@ -42,7 +44,6 @@ public:
     double distanceZombie(double x, double y);
     int findDirectionPene(double x, double y, Actor* moving);
     int findDirectionZombie(double x, double y, Actor* moving);
-
     
     void setVaccine(int m) {m_vac+=m;}
     void setGasCan(int m) {m_gas+=m;}

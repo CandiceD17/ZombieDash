@@ -58,7 +58,7 @@ int StudentWorld::init()
         default:
             return GWSTATUS_PLAYER_WON;
     }
-    Level::LoadResult result = lev.loadLevel(levelFile);
+    Level::LoadResult result = lev.loadLevel("level02.txt");
     if (result == Level::load_success){
         for(int i=0; i<LEVEL_WIDTH;i++){
             for(int j=0; j<LEVEL_HEIGHT;j++){
@@ -267,29 +267,60 @@ void StudentWorld::playerLandmine(double x, double y){
 void StudentWorld::LandmineExplode(double x, double y){
     m_member.push_front(new Pit(x,y,this));
     if(canFire(x, y))
-        m_member.push_front(new Flame(x,y,GraphObject::right,this));
+        m_member.push_front(new Flame(x,y,GraphObject::up,this));
     
     if(canFire(x+SPRITE_WIDTH, y))
-        m_member.push_front(new Flame(x+SPRITE_WIDTH,y,GraphObject::right,this));
+        m_member.push_front(new Flame(x+SPRITE_WIDTH,y,GraphObject::up,this));
     if(canFire(x-SPRITE_WIDTH, y))
-        m_member.push_front(new Flame(x-SPRITE_WIDTH,y,GraphObject::right,this));
+        m_member.push_front(new Flame(x-SPRITE_WIDTH,y,GraphObject::up,this));
     if(canFire(x, y+SPRITE_HEIGHT))
-        m_member.push_front(new Flame(x,y+SPRITE_HEIGHT,GraphObject::right,this));
+        m_member.push_front(new Flame(x,y+SPRITE_HEIGHT,GraphObject::up,this));
     if(canFire(x, y-SPRITE_HEIGHT))
-        m_member.push_front(new Flame(x,y-SPRITE_HEIGHT,GraphObject::right,this));
+        m_member.push_front(new Flame(x,y-SPRITE_HEIGHT,GraphObject::up,this));
 
     if(canFire(x+SPRITE_WIDTH, y+SPRITE_HEIGHT))
-        m_member.push_front(new Flame(x+SPRITE_WIDTH,y+SPRITE_HEIGHT,GraphObject::right,this));
+        m_member.push_front(new Flame(x+SPRITE_WIDTH,y+SPRITE_HEIGHT,GraphObject::up,this));
     if(canFire(x+SPRITE_WIDTH, y-SPRITE_HEIGHT))
-        m_member.push_front(new Flame(x+SPRITE_WIDTH,y-SPRITE_HEIGHT,GraphObject::right,this));
+        m_member.push_front(new Flame(x+SPRITE_WIDTH,y-SPRITE_HEIGHT,GraphObject::up,this));
     if(canFire(x-SPRITE_WIDTH, y-SPRITE_HEIGHT))
-        m_member.push_front(new Flame(x-SPRITE_WIDTH,y-SPRITE_HEIGHT,GraphObject::right,this));
+        m_member.push_front(new Flame(x-SPRITE_WIDTH,y-SPRITE_HEIGHT,GraphObject::up,this));
     if(canFire(x-SPRITE_WIDTH, y+SPRITE_HEIGHT))
-        m_member.push_front(new Flame(x-SPRITE_WIDTH,y+SPRITE_HEIGHT,GraphObject::right,this));
+        m_member.push_front(new Flame(x-SPRITE_WIDTH,y+SPRITE_HEIGHT,GraphObject::up,this));
 }
 
+bool StudentWorld::noOverlap(double x, double y){
+    if(overlap(x, y, m_Pene))
+        return false;
+    
+    list<Actor*>::iterator it;
+    for(it=m_member.begin();it!=m_member.end();it++){
+            if(overlap(x, y, *it))
+                return false;}
+    return true;
+}
+
+
+
 void StudentWorld::moreVaccine(double x, double y){
-    m_member.push_front(new Vaccine(x, y, this));
+    int dir = randInt(1, 4);
+    switch (dir) {
+        case 1: //up
+            if(noOverlap(x, y+SPRITE_HEIGHT))
+                m_member.push_front(new Vaccine(x, y+SPRITE_HEIGHT, this));
+            return;
+        case 2: //down
+            if(noOverlap(x, y-SPRITE_HEIGHT))
+                m_member.push_front(new Vaccine(x, y-SPRITE_HEIGHT, this));
+            return;
+        case 3: //right
+            if(noOverlap(x+SPRITE_WIDTH, y))
+                m_member.push_front(new Vaccine(x+SPRITE_WIDTH, y, this));
+            return;
+        case 4: //left
+            if(noOverlap(x-SPRITE_WIDTH, y))
+                m_member.push_front(new Vaccine(x-SPRITE_WIDTH, y, this));
+            return;
+    }
 }
 
 bool StudentWorld::toVomit(double x, double y, int direction){

@@ -124,6 +124,7 @@ void Citizen::doSomething(){
 
 bool Citizen::exit(){
     setDead();
+    getWorld()->playSound(SOUND_CITIZEN_SAVED);
     getWorld()->removeCitizen();
     return true;
 }
