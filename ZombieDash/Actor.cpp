@@ -7,7 +7,7 @@
 
 void Penelope::doSomething(){
     if(StateInfection())
-        infecting();
+        addInfection();
     if(CountInfection()==500){
         setDead();
         getWorld()->decLives();
@@ -39,7 +39,6 @@ void Penelope::doSomething(){
             break;
         case KEY_PRESS_SPACE:
             getWorld()->playerFire(getX(), getY(), getDirection());
-            getWorld()->playSound(SOUND_PLAYER_FIRE);
             break;
         case KEY_PRESS_TAB: //landmine
             getWorld()->playerLandmine(getX(), getY());
@@ -92,7 +91,7 @@ void Citizen::doSomething(){
     if(!alive())
         return;
     if(StateInfection())
-        infecting();
+        addInfection();
     if(CountInfection()==500){
         setDead();
         getWorld()->playSound(SOUND_ZOMBIE_BORN);

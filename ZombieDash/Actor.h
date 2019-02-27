@@ -17,11 +17,11 @@ public:
     virtual void doSomething()=0;
     virtual bool exit()=0; //can pass thru the exit
     virtual bool pass()=0; //allows other object to pass thru
-    virtual bool isHuman()=0;
-    virtual bool isZombie()=0;
     virtual void flamming()=0;
-    virtual void infecting()=0;
-    virtual bool blockFlame()=0;
+    virtual void infecting() {return;}
+    virtual bool blockFlame() {return false;}
+    virtual bool isHuman() {return false;}
+    virtual bool isZombie() {return false;}
     void setDead() {isAlive = false;}
     bool alive() {return isAlive;}
     StudentWorld* getWorld() {return m_world;}
@@ -44,15 +44,16 @@ public:
     virtual bool exit()=0;
     virtual bool pass() {return false;}
     virtual bool isHuman() {return true;}
-    virtual bool isZombie() {return false;}
+//    virtual bool isZombie() {return false;}
     virtual void flamming()=0;
     virtual void infecting(){
- //       return;
-        infectCount++;
-        infectState=true;}
-    virtual bool blockFlame() {return false;}
+        if(!infectState){
+            infectCount++;
+            infectState=true;}}
+ //   virtual bool blockFlame() {return false;}
     int CountInfection() {return infectCount;}
     bool StateInfection() {return infectState;}
+    void addInfection() {infectCount++;}
     void noInfection() {infectState = false;}
     void resetInfection() {infectCount = 0;}
 private:
@@ -95,10 +96,10 @@ public:
     virtual void doSomething() {return;}
     virtual bool pass() {return false;}
     virtual bool exit() {return false;}
-    virtual bool isHuman() {return false;}
-    virtual bool isZombie() {return false;}
+//    virtual bool isHuman() {return false;}
+//    virtual bool isZombie() {return false;}
     virtual void flamming() {return;}
-    virtual void infecting() {return;}
+ //   virtual void infecting() {return;}
     virtual bool blockFlame() {return true;}
 };
 
@@ -110,10 +111,10 @@ public:
     virtual void doSomething();
     virtual bool pass() {return true;}
     virtual bool exit() {return false;}
-    virtual bool isHuman() {return false;}
-    virtual bool isZombie() {return false;}
+//    virtual bool isHuman() {return false;}
+//    virtual bool isZombie() {return false;}
     virtual void flamming() {return;}
-    virtual void infecting() {return;}
+ //   virtual void infecting() {return;}
     virtual bool blockFlame() {return true;}
 };
 
@@ -125,11 +126,11 @@ public:
     virtual void doSomething();
     virtual bool pass() {return true;}
     virtual bool exit() {return false;}
-    virtual bool isHuman() {return false;}
-    virtual bool isZombie() {return false;}
+//    virtual bool isHuman() {return false;}
+//    virtual bool isZombie() {return false;}
     virtual void flamming() {return;}
-    virtual void infecting() {return;}
-    virtual bool blockFlame() {return false;}
+//    virtual void infecting() {return;}
+ //   virtual bool blockFlame() {return false;}
 };
 
 //class for flame and vomit
@@ -141,11 +142,11 @@ public:
     virtual void doSomething()=0;
     virtual bool pass() {return true;}
     virtual bool exit() {return false;}
-    virtual bool isHuman() {return false;}
-    virtual bool isZombie() {return false;}
+//    virtual bool isHuman() {return false;}
+//    virtual bool isZombie() {return false;}
     virtual void flamming() {return;}
-    virtual void infecting() {return;}
-    virtual bool blockFlame() {return false;}
+//    virtual void infecting() {return;}
+ //   virtual bool blockFlame() {return false;}
     int myTick() {return tickLeft;}
     void minus() {tickLeft--;}
 private:
@@ -176,11 +177,11 @@ public:
     virtual void doSomething()=0;
     virtual bool exit() {return false;}
     virtual bool pass() {return true;}
-    virtual bool isHuman() {return false;}
-    virtual bool isZombie() {return false;}
+//    virtual bool isHuman() {return false;}
+//    virtual bool isZombie() {return false;}
     virtual void flamming() {setDead();}
-    virtual void infecting() {return;}
-    virtual bool blockFlame() {return false;}
+  //  virtual void infecting() {return;}
+  //  virtual bool blockFlame() {return false;}
 };
 
 class Vaccine: public Goodies{
@@ -227,11 +228,11 @@ public:
     virtual void doSomething()=0;
     virtual bool exit() {return false;}
     virtual bool pass() {return false;}
-    virtual bool isHuman() {return false;}
+ //   virtual bool isHuman() {return false;}
     virtual bool isZombie() {return true;}
     virtual void flamming()=0;
-    virtual void infecting() {return;}
-    virtual bool blockFlame() {return false;}
+  //  virtual void infecting() {return;}
+  //  virtual bool blockFlame() {return false;}
     void addTime() {m_tick++;}
     int tick() {return m_tick;}
     Direction randomDirection();

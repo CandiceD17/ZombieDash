@@ -36,6 +36,8 @@ public:
     
     bool noOverlap(double x, double y);
     void moreVaccine(double x, double y);
+    bool toVomit(double x, double y, int direction);
+    int findDirection(double x, double y);
     
     int citizenCount() {return citizenNum;}
     void removeCitizen() {citizenNum--;}
@@ -49,9 +51,6 @@ public:
     void setGasCan(int m) {m_gas+=m;}
     void setLandmine(int m) {m_land+=m;}
     int myVaccine() {return m_vac;}
-
-    bool toVomit(double x, double y, int direction);
-    int findDirection(double x, double y);
 
 private:
     Penelope* m_Pene;

@@ -58,7 +58,7 @@ int StudentWorld::init()
         default:
             return GWSTATUS_PLAYER_WON;
     }
-    Level::LoadResult result = lev.loadLevel("level02.txt");
+    Level::LoadResult result = lev.loadLevel("level04.txt");
     if (result == Level::load_success){
         for(int i=0; i<LEVEL_WIDTH;i++){
             for(int j=0; j<LEVEL_HEIGHT;j++){
@@ -107,8 +107,6 @@ int StudentWorld::init()
 
 int StudentWorld::move()
 {
-    // This code is here merely to allow the game to build, run, and terminate after you hit enter.
-    // Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
     if(m_Pene->alive())
         m_Pene->doSomething();
     list<Actor*>::iterator it;
@@ -133,8 +131,8 @@ int StudentWorld::move()
                     "Vacc: "+std::to_string(m_vac)+"  "+
                     "Flames: "+std::to_string(m_gas)+"  "+
                     "Mines: "+std::to_string(m_land)+"  "+
-                    "C: "+std::to_string(citizenNum)+"  "+
-                    "Infected: "+std::to_string(m_Pene->CountInfection()));//change
+                 //   "C: "+std::to_string(citizenNum)+"  "+
+                    "Infected: "+std::to_string(m_Pene->CountInfection()));
     return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -172,14 +170,15 @@ bool StudentWorld::overlap(double x, double y, Actor* me){
 }
 
 bool StudentWorld::overlapExit(double x, double y, Actor* thisOne){
-    if(overlap(x, y, m_Pene))
-        return m_Pene->exit();
-    
     list<Actor*>::iterator it;
     for(it=m_member.begin();it!=m_member.end();it++){
         if(thisOne!=*it)
             if(overlap(x, y, *it))
                 return (*it)->exit();}
+    
+    if(overlap(x, y, m_Pene))
+        return m_Pene->exit();
+    
     return false;
 }
 
@@ -238,6 +237,7 @@ void StudentWorld::playerFire(double x, double y, int direction){
         return;
     m_gas--;
     for(int i=1; i<=3; i++){
+        playSound(SOUND_PLAYER_FIRE);
         if(direction==GraphObject::up){
             if(!canFire(x, y+i*SPRITE_HEIGHT))
                 return;
@@ -383,7 +383,7 @@ bool StudentWorld::toVomit(double x, double y, int direction){
 int StudentWorld::findDirection(double x, double y){
     double minDistance=sqrt(pow((m_Pene)->getX()-x,2)+pow((m_Pene)->getY()-y,2));
     int dir = -1;
-    Actor* closet = m_member.front();
+    Actor* closet = m_Pene;
     list<Actor*>::iterator it;
     for(it=m_member.begin();it!=m_member.end();it++){
         if(sqrt(pow((*it)->getX()-x,2)+pow((*it)->getY()-y,2))<minDistance){
@@ -490,7 +490,7 @@ int StudentWorld::findDirectionZombie(double x, double y, Actor* moving){
     }
     int dir=-1;
     if(!hasPointer)
-        return false;
+        return dir;
     if(sqrt(pow((closet)->getX()-(x+2),2)+pow((closet)->getY()-y,2))>minDistance){//move right
         if(notblocked(x+2, y, moving)){
             minDistance = sqrt(pow((closet)->getX()-(x+2),2)+pow((closet)->getY()-y,2));
